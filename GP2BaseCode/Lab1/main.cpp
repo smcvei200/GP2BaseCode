@@ -20,7 +20,7 @@ int main(int argc, char **argv)
 #endif
 {
 	CGameApplication *pApp=new CGameApplication();
-	if (!pApp->init(TEXT("Lab 1")))
+	if (!pApp->init())
 	{
 		if (pApp)
 		{

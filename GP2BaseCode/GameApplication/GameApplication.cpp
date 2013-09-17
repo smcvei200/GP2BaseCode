@@ -6,6 +6,10 @@
 CGameApplication::CGameApplication(void)
 {
 	m_pWindow=NULL;
+	m_GameOptionDesc.gameName=TEXT("Lab 1");
+	m_GameOptionDesc.width=800;
+	m_GameOptionDesc.height=640;
+	m_GameOptionDesc.fullscreen=false;
 }
 
 CGameApplication::~CGameApplication(void)
@@ -19,9 +23,10 @@ CGameApplication::~CGameApplication(void)
 
 //Init
 //This initialises all subsystems
-bool CGameApplication::init(const wstring &gameName)
+bool CGameApplication::init()
 {
-	m_GameName=gameName;
+	//Parse command line options and also config file
+
 	if (!initWindow())
 		return false;
 	if (!initGraphics())
@@ -35,9 +40,9 @@ bool CGameApplication::init(const wstring &gameName)
 
 bool CGameApplication::initGame()
 {
+	//Create a Win32 Window
 	m_pWindow=new CWin32Window();
-	//should all come from a config file
-	m_pWindow->init(m_GameName,800,640,false);
+	m_pWindow->init(m_GameOptionDesc.gameName,m_GameOptionDesc.width,m_GameOptionDesc.height,m_GameOptionDesc.fullscreen);
 	return true;
 }
 

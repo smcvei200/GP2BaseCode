@@ -1,7 +1,11 @@
 #include "Win32Window.h"
 
+//Global pointer, this is a bit of a trick to make the Win32
+//object orientated - BMD
 CWin32Window * g_pWindow=NULL;
 
+//Callback function for windows messages, this again is a bit of trick to make
+//the window work in an object orientated manner - BMD
 LRESULT CALLBACK StaticWndProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam )
 {
 	//call the wndProc function held inside the instance of the CWin32Window class - BMD
@@ -11,19 +15,20 @@ LRESULT CALLBACK StaticWndProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPar
 
 CWin32Window::CWin32Window(void)
 {
+	//again part of the track - BMD
 	g_pWindow=this;
 }
 
 CWin32Window::~CWin32Window(void)
 {
-
+	g_pWindow=NULL;
 }
 
 bool CWin32Window::init(const wstring &title,int width,int height,bool fullscreen)
 {
 	m_bIsFullScreen=fullscreen;
 	//Retrieve the instance of the applicaiton, this is needed to
-	//link up the application to the window 
+	//link up the application to the window - BMD
 	//http://msdn.microsoft.com/en-us/library/ms683199%28v=vs.85%29.aspx -BMD
 	HINSTANCE currentInstance=GetModuleHandle(NULL);
 	// Register the windows class, this is used for information about the window
