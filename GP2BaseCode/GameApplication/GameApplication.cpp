@@ -3,13 +3,19 @@
 //should really check to see if we are on a windows platform
 #include "../Window/Win32Window.h"
 
+//boost header for program options
+#include <boost/program_options.hpp>
+namespace po = boost::program_options;
+
+
 CGameApplication::CGameApplication(void)
 {
 	m_pWindow=NULL;
-	m_GameOptionDesc.gameName=TEXT("Lab 1");
+	m_GameOptionDesc.gameName=TEXT("GP2");
 	m_GameOptionDesc.width=800;
 	m_GameOptionDesc.height=640;
 	m_GameOptionDesc.fullscreen=false;
+	m_ConfigFileName=TEXT("game.cfg");
 }
 
 CGameApplication::~CGameApplication(void)
@@ -25,8 +31,17 @@ CGameApplication::~CGameApplication(void)
 //This initialises all subsystems
 bool CGameApplication::init()
 {
-	//Parse command line options and also config file
+	//Parse command line options and also config file(need to build boost)
+	 po::options_description config("Configuration");
+	 config.add_options()
+		 ("GameName",po::value<string>(),"Game Title");
+		 /*
+		 ("WindowWidth",po::value<int>(&config)->default_value(m_GameOptionDesc.width),"Width of the Game window")
+		 ("WindowHeight",po::value<int>(&config)->default_value(m_GameOptionDesc.height),"Width of the Game window")
+		 ("Fullscreen",po::value<float>(&config)->default_value(m_GameOptionDesc.fullscreen),"Fullscreen window");*/
 
+	if(!parseConfigFile())
+		return false;
 	if (!initWindow())
 		return false;
 	if (!initGraphics())
@@ -35,6 +50,13 @@ bool CGameApplication::init()
 		return false;
 	if (!initGame())
 		return false;
+	return true;
+}
+
+bool CGameApplication::parseConfigFile()
+{
+	//does the file exist?
+
 	return true;
 }
 

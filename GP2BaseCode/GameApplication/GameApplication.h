@@ -27,6 +27,7 @@ public:
 	virtual void render();
 	virtual void update();
 private:
+	bool parseConfigFile();
 	bool initInput();
 	bool initGame();
 	bool initGraphics();
@@ -36,4 +37,5 @@ private:
 private:
 	IWindow * m_pWindow;
 	GameOptionsDesc m_GameOptionDesc;
+	wstring m_ConfigFileName;
 };
