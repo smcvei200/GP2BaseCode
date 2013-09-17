@@ -1,0 +1,18 @@
+﻿Build started 17/09/2013 13:02:41.
+     1>Project "C:\Users\bmd1\Documents\GitHub\GP2BaseCode\GP2BaseCode\Window\Window.vcxproj" on node 3 (build target(s)).
+     1>InitializeBuildStatus:
+         Creating "Debug\Window.unsuccessfulbuild" because "AlwaysCreate" was specified.
+       ClCompile:
+         c:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\bin\CL.exe /c /ZI /nologo /W3 /WX- /Od /Oy- /D WIN32 /D _DEBUG /D _LIB /D _UNICODE /D UNICODE /Gm /EHsc /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Fo"Debug\\" /Fd"Debug\vc100.pdb" /Gd /TP /analyze- /errorReport:prompt Win32Window.cpp
+         Win32Window.cpp
+       Lib:
+         c:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\bin\Lib.exe /OUT:"C:\Users\bmd1\Documents\GitHub\GP2BaseCode\GP2BaseCode\Debug\Window.lib" /NOLOGO Debug\Win32Window.obj
+         Window.vcxproj -> C:\Users\bmd1\Documents\GitHub\GP2BaseCode\GP2BaseCode\Debug\Window.lib
+       FinalizeBuildStatus:
+         Deleting file "Debug\Window.unsuccessfulbuild".
+         Touching "Debug\Window.lastbuildstate".
+     1>Done Building Project "C:\Users\bmd1\Documents\GitHub\GP2BaseCode\GP2BaseCode\Window\Window.vcxproj" (build target(s)).
+
+Build succeeded.
+
+Time Elapsed 00:00:04.18
