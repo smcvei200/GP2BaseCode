@@ -7,6 +7,7 @@
 
 #include "../GameApplication/GameApplication.h"
 
+#define BOOST_ALL_NO_LIB
 
 //Check to see if we are on windows
 #ifdef WIN32

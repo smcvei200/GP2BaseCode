@@ -5,6 +5,8 @@
 
 //boost header for program options
 #include <boost/program_options.hpp>
+#include <fstream> 
+using namespace std;
 namespace po = boost::program_options;
 
 
@@ -12,8 +14,8 @@ CGameApplication::CGameApplication(void)
 {
 	m_pWindow=NULL;
 	m_GameOptionDesc.gameName=TEXT("GP2");
-	m_GameOptionDesc.width=800;
-	m_GameOptionDesc.height=640;
+	m_GameOptionDesc.width=640;
+	m_GameOptionDesc.height=480;
 	m_GameOptionDesc.fullscreen=false;
 	m_ConfigFileName=TEXT("game.cfg");
 }
@@ -31,11 +33,7 @@ CGameApplication::~CGameApplication(void)
 //This initialises all subsystems
 bool CGameApplication::init()
 {
-	//Parse command line options and also config file(need to build boost)
-	 po::options_description config("Configuration");
-	 config.add_options()
-		 ("GameName",po::value<string>(),"Game Title");
-		 /*
+	/*
 		 ("WindowWidth",po::value<int>(&config)->default_value(m_GameOptionDesc.width),"Width of the Game window")
 		 ("WindowHeight",po::value<int>(&config)->default_value(m_GameOptionDesc.height),"Width of the Game window")
 		 ("Fullscreen",po::value<float>(&config)->default_value(m_GameOptionDesc.fullscreen),"Fullscreen window");*/
@@ -55,8 +53,30 @@ bool CGameApplication::init()
 
 bool CGameApplication::parseConfigFile()
 {
-	//does the file exist?
-
+	//Parse command line options and also config file(need to build boost)
+	po::options_description config_file_options("Configuration");
+	config_file_options.add_options()
+		 ("GameName",po::wvalue<wstring>(),"Game Title")
+		 ("WindowWidth",po::value<int>(),"Window Width")
+		 ("WindowHeight",po::value<int>(),"Window Height")
+		 ("FullScreenWindow",po::value<bool>(),"Fullscreen");
+	 //read file
+	wifstream ifs(m_ConfigFileName.c_str());
+	po::variables_map vm;
+    if (!ifs)
+    {
+        
+        return false;
+    }
+    else
+    {
+        store(parse_config_file(ifs, config_file_options), vm);
+        notify(vm);
+		m_GameOptionDesc.gameName=vm["GameName"].as<wstring>();
+		m_GameOptionDesc.width=vm["WindowWidth"].as<int>();
+		m_GameOptionDesc.height=vm["WindowHeight"].as<int>();
+		m_GameOptionDesc.fullscreen=vm["FullScreenWindow"].as<bool>();
+    }
 	return true;
 }
 
