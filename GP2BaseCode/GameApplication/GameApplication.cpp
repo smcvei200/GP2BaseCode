@@ -53,7 +53,8 @@ bool CGameApplication::init()
 
 bool CGameApplication::parseConfigFile()
 {
-	//Parse command line options and also config file(need to build boost)
+	//Parse config file
+	//Options descriptions
 	po::options_description config_file_options("Configuration");
 	config_file_options.add_options()
 		 ("GameName",po::wvalue<wstring>(),"Game Title")
@@ -62,7 +63,9 @@ bool CGameApplication::parseConfigFile()
 		 ("FullScreenWindow",po::value<bool>(),"Fullscreen");
 	 //read file
 	wifstream ifs(m_ConfigFileName.c_str());
+	//map holds variables
 	po::variables_map vm;
+	//file dosen't exist
     if (!ifs)
     {
         
@@ -70,8 +73,11 @@ bool CGameApplication::parseConfigFile()
     }
     else
     {
+		//store config
         store(parse_config_file(ifs, config_file_options), vm);
+		//notify any changes
         notify(vm);
+		//retrieve each option
 		m_GameOptionDesc.gameName=vm["GameName"].as<wstring>();
 		m_GameOptionDesc.width=vm["WindowWidth"].as<int>();
 		m_GameOptionDesc.height=vm["WindowHeight"].as<int>();
