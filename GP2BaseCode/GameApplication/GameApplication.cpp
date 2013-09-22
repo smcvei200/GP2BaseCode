@@ -2,6 +2,7 @@
 
 //should really check to see if we are on a windows platform
 #include "../Window/Win32Window.h"
+#include "../D3D10Renderer/D3D10Renderer.h"
 
 //boost header for program options
 #include <boost/program_options.hpp>
@@ -13,6 +14,7 @@ namespace po = boost::program_options;
 CGameApplication::CGameApplication(void)
 {
 	m_pWindow=NULL;
+	m_pRenderer=NULL;
 	m_GameOptionDesc.gameName=TEXT("GP2");
 	m_GameOptionDesc.width=640;
 	m_GameOptionDesc.height=480;
@@ -22,6 +24,11 @@ CGameApplication::CGameApplication(void)
 
 CGameApplication::~CGameApplication(void)
 {
+	if (m_pRenderer)
+	{
+		delete m_pRenderer;
+		m_pRenderer=NULL;
+	}
 	if (m_pWindow)
 	{
 		delete m_pWindow;
@@ -33,11 +40,6 @@ CGameApplication::~CGameApplication(void)
 //This initialises all subsystems
 bool CGameApplication::init()
 {
-	/*
-		 ("WindowWidth",po::value<int>(&config)->default_value(m_GameOptionDesc.width),"Width of the Game window")
-		 ("WindowHeight",po::value<int>(&config)->default_value(m_GameOptionDesc.height),"Width of the Game window")
-		 ("Fullscreen",po::value<float>(&config)->default_value(m_GameOptionDesc.fullscreen),"Fullscreen window");*/
-
 	if(!parseConfigFile())
 		return false;
 	if (!initWindow())
@@ -88,9 +90,7 @@ bool CGameApplication::parseConfigFile()
 
 bool CGameApplication::initGame()
 {
-	//Create a Win32 Window
-	m_pWindow=new CWin32Window();
-	m_pWindow->init(m_GameOptionDesc.gameName,m_GameOptionDesc.width,m_GameOptionDesc.height,m_GameOptionDesc.fullscreen);
+
 	return true;
 }
 
@@ -106,7 +106,9 @@ void CGameApplication::run()
 
 void CGameApplication::render()
 {
- 
+	m_pRenderer->clear(1.0f,0.0f,0.0f,1.0f);
+
+	m_pRenderer->present();
 }
 
 void CGameApplication::update()
@@ -125,10 +127,18 @@ bool CGameApplication::initPhysics()
 //initGraphics - initialise the graphics subsystem - BMD
 bool CGameApplication::initGraphics()
 {
+	//check our settings first, to see what graphics mode we are in
+	m_pRenderer=new D3D10Renderer();
+	if (!m_pRenderer->init(m_pWindow->getHandleToWindow(),m_GameOptionDesc.fullscreen))
+		return false;
+
 	return true;
 }
 
 bool CGameApplication::initWindow()
 {
+	//Create a Win32 Window
+	m_pWindow=new CWin32Window();
+	m_pWindow->init(m_GameOptionDesc.gameName,m_GameOptionDesc.width,m_GameOptionDesc.height,m_GameOptionDesc.fullscreen);
 	return true;
 }

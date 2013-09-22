@@ -7,6 +7,7 @@ using namespace std;
 
 //Forward decleration of our Window Interface
 class IWindow;
+class IRenderer;
 
 struct GameOptionsDesc
 {
@@ -37,6 +38,7 @@ private:
 	bool initWindow();
 private:
 	IWindow * m_pWindow;
+	IRenderer * m_pRenderer;
 	GameOptionsDesc m_GameOptionDesc;
 	wstring m_ConfigFileName;
 };
