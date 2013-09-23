@@ -3,7 +3,6 @@
 #include <string>
 
 using namespace std;
-//#define BOOST_ALL_NO_LIB
 
 //Forward decleration of our Window Interface
 class IWindow;
