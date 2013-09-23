@@ -5,10 +5,10 @@
 #include "../D3D10Renderer/D3D10Renderer.h"
 
 //boost header for program options
-#include <boost/program_options.hpp>
+//#include <boost/program_options.hpp>
 #include <fstream> 
 using namespace std;
-namespace po = boost::program_options;
+//namespace po = boost::program_options;
 
 
 CGameApplication::CGameApplication(void)
@@ -57,34 +57,35 @@ bool CGameApplication::parseConfigFile()
 {
 	//Parse config file
 	//Options descriptions
-	po::options_description config_file_options("Configuration");
-	config_file_options.add_options()
-		 ("GameName",po::wvalue<wstring>(),"Game Title")
-		 ("WindowWidth",po::value<int>(),"Window Width")
-		 ("WindowHeight",po::value<int>(),"Window Height")
-		 ("FullScreenWindow",po::value<bool>(),"Fullscreen");
+	//Boost is broken at the moment, a fix will be brought in shortly
+	//po::options_description config_file_options("Configuration");
+	//config_file_options.add_options()
+	//	 ("GameName",po::wvalue<wstring>(),"Game Title")
+	//	 ("WindowWidth",po::value<int>(),"Window Width")
+	//	 ("WindowHeight",po::value<int>(),"Window Height")
+	//	 ("FullScreenWindow",po::value<bool>(),"Fullscreen");
 	 //read file
-	wifstream ifs(m_ConfigFileName.c_str());
+	//wifstream ifs(m_ConfigFileName.c_str());
 	//map holds variables
-	po::variables_map vm;
+	//po::variables_map vm;
 	//file dosen't exist
-    if (!ifs)
-    {
+    //if (!ifs)
+    //{
         
-        return false;
-    }
-    else
-    {
+    //    return false;
+    //}
+    //else
+    //{
 		//store config
-        store(parse_config_file(ifs, config_file_options), vm);
+    //    store(parse_config_file(ifs, config_file_options), vm);
 		//notify any changes
-        notify(vm);
+    //    notify(vm);
 		//retrieve each option
-		m_GameOptionDesc.gameName=vm["GameName"].as<wstring>();
-		m_GameOptionDesc.width=vm["WindowWidth"].as<int>();
-		m_GameOptionDesc.height=vm["WindowHeight"].as<int>();
-		m_GameOptionDesc.fullscreen=vm["FullScreenWindow"].as<bool>();
-    }
+	//	m_GameOptionDesc.gameName=vm["GameName"].as<wstring>();
+	//	m_GameOptionDesc.width=vm["WindowWidth"].as<int>();
+	//	m_GameOptionDesc.height=vm["WindowHeight"].as<int>()
+	//	m_GameOptionDesc.fullscreen=vm["FullScreenWindow"].as<bool>();
+    //}
 	return true;
 }
 
