@@ -32,95 +32,69 @@ D3D10Renderer::~D3D10Renderer()
 bool D3D10Renderer::init(void *pWindowHandle,bool fullScreen)
 {
 	HWND window=(HWND)pWindowHandle;
-
-	//Retrieve the size of the window, this is need to match the
-	//back buffer to screen size - BMD
 	RECT windowRect;
-	//http://msdn.microsoft.com/en-us/library/ms633503%28v=vs.85%29.aspx -BMD
 	GetClientRect(window,&windowRect);
 
-	//Calculate the width and height of the window - BMD
 	UINT width=windowRect.right-windowRect.left;
 	UINT height=windowRect.bottom-windowRect.top;
 
-	//Device creation flags, used to control our the D3D10 device is created
+	if (!createDevice(window,width,height,fullScreen))
+		return false;
+	if (!createInitialRenderTarget(width,height))
+		return false;
+
+	return true;
+}
+
+bool D3D10Renderer::createDevice(HWND window,int windowWidth, int windowHeight,bool fullScreen)
+{
 	UINT createDeviceFlags=0;
-	//If we are in a debug build then set the device creation flag to debug device
 #ifdef _DEBUG
 	createDeviceFlags|=D3D10_CREATE_DEVICE_DEBUG;
 #endif
 
-	//Swap Chain description - used in the creation of the swap chain
-	//http://msdn.microsoft.com/en-us/library/bb173075%28v=vs.85%29.aspx - BMD
-
-	//Initialise the swap chain description by setting all its values to zero - BMD
 	DXGI_SWAP_CHAIN_DESC sd;
-	//http://msdn.microsoft.com/en-us/library/aa366920%28v=vs.85%29.aspx - BMD
-    ZeroMemory( &sd, sizeof( sd ) );
-	//What kind of surface is contained in the swap chain, in this case something we draw too
-	//http://msdn.microsoft.com/en-us/library/bb173078%28v=vs.85%29.aspx - BMD
+       ZeroMemory( &sd, sizeof( sd ) );
 	sd.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
-	//Number of buffers, if we are not full screen this will be one as the desktop
-	//acts as a front buffer. If we are in full screen this will be one - BMD
 	if (fullScreen)
 		sd.BufferCount = 2;
 	else 
 		sd.BufferCount=1;
-	//The handle of the window which this swap chain is linked to, this must not be NULL - BMD
 	sd.OutputWindow = window;
-	//Are we in windowed mode, arggh opposite of full screen
 	sd.Windowed = (BOOL)(!fullScreen);
-	//Multisampling(antialsing) parameters for the swap chain - this has performance considerations - see remarks in docs
-	//http://msdn.microsoft.com/en-us/library/bb173072%28v=vs.85%29.aspx - BMD
-    sd.SampleDesc.Count = 1;
-    sd.SampleDesc.Quality = 0;
-	//The description of the swap chain buffer
-	//http://msdn.microsoft.com/en-us/library/bb173064%28v=vs.85%29.aspx - BMD
-	//width & height of the buffer - this matches the size of the window - BMD
-    sd.BufferDesc.Width = width;
-    sd.BufferDesc.Height = height;
-	//The data format of the buffer in the swap chain, 8bits used for Red, green, blue & alpha - unsigned int(UNIFORM) - BMD
-	//http://msdn.microsoft.com/en-us/library/bb173059%28v=vs.85%29.aspx
-    sd.BufferDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
-	//Refresh rate of the buffer in the swap chain - BMD
-    sd.BufferDesc.RefreshRate.Numerator = 60;
-    sd.BufferDesc.RefreshRate.Denominator = 1;
-	
-	//NB. You should get use to seeing patterns like this when programming with D3D10 
-	//where we use a description object which is then used in the creation of a D3D10 resource 
-	//like swap chains. Also in a real application we would check to see if some of the above
-	//options are support by the graphics hardware. -BMD
+       sd.SampleDesc.Count = 1;
+       sd.SampleDesc.Quality = 0;
+       sd.BufferDesc.Width = windowWidth;
+       sd.BufferDesc.Height = windowHeight;
+       sd.BufferDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+       sd.BufferDesc.RefreshRate.Numerator = 60;
+       sd.BufferDesc.RefreshRate.Denominator = 1;
 
-	//Create D3D10 Device and swap chain 
-	//http://msdn.microsoft.com/en-us/library/bb205087%28v=vs.85%29.aspx - BMD
-	if (FAILED(D3D10CreateDeviceAndSwapChain(NULL, //Pointer to IDXGIAdpater, this is a display adapater on the machine this can be NULL - BMD
-		D3D10_DRIVER_TYPE_HARDWARE,//Type of Driver we have, it can be a hardware device, refrence(slow) or Software(not supported yet) - BMD
-		NULL, //Handle to a module that implements a software rasterizer - BMD
-		createDeviceFlags,//The device creation flags we used earlier on - BMD
-		D3D10_SDK_VERSION,//The version of the SDK we are using this should D3D10 - BMD
-		&sd,//The memory address of the swap chain description - BMD
-		&m_pSwapChain, //The memory address of the swap chain pointer, if all goes well this will be intialised after this function call - BMD
-		&m_pD3D10Device)))//the memory address of the D3D10 Device, if all goes well this will be initialised after this function call - BMD
+	if (FAILED(D3D10CreateDeviceAndSwapChain(NULL, 
+		D3D10_DRIVER_TYPE_HARDWARE,
+		NULL, 
+		createDeviceFlags,
+		D3D10_SDK_VERSION,		
+              &sd,
+		&m_pSwapChain, 
+		&m_pD3D10Device)))                       
 		return false;
 
-	//NB. There are two ways of creating the device, the above way which initialises the device and swap chain at the sametime
-	// or we can create a swap chain and a device seperatly and then associate a swap chain with a device. - BMD
+	return true;
+}
 
-	//Create a render target, this is a Texture which will hold our backbuffer, this will
-	//enable us to link the rendertarget with buffer held in the swap chain - BMD
+bool D3D10Renderer::createInitialRenderTarget(int windowWidth, int windowHeight)
+{
 	ID3D10Texture2D *pBackBuffer;
-	//Get a buffer from the swap chain 
-	//http://msdn.microsoft.com/en-us/library/bb174570%28v=vs.85%29.aspx - BMD
-	if (FAILED(m_pSwapChain->GetBuffer(0, //buffer index, 0 will get the back buffer
-		__uuidof(ID3D10Texture2D),//The unique identifier of the type of pointer we want in
-								  //this case a I3D10 Texture2D
-		(void**)&pBackBuffer)))//A pointer to a memory address, this is cast to a void ** because this function
-							   //can return back different types dependent on the 2nd param
+	
+	if (FAILED(m_pSwapChain->GetBuffer(0, 
+		__uuidof(ID3D10Texture2D),
+		(void**)&pBackBuffer))) 
 		return false;
 
 	D3D10_TEXTURE2D_DESC descDepth;
-	descDepth.Width=width;
-	descDepth.Height=height;
+	descDepth.Width=windowWidth;
+	descDepth.Height=windowHeight;
 	descDepth.MipLevels=1;
 	descDepth.ArraySize=1;
 	descDepth.Format=DXGI_FORMAT_D32_FLOAT;
@@ -131,7 +105,8 @@ bool D3D10Renderer::init(void *pWindowHandle,bool fullScreen)
 	descDepth.CPUAccessFlags=0;
 	descDepth.MiscFlags=0;
 
-	if (FAILED(m_pD3D10Device->CreateTexture2D(&descDepth,NULL,&m_pDepthStencilTexture)))
+	if (FAILED(m_pD3D10Device->CreateTexture2D(&descDepth,NULL,
+			&m_pDepthStencilTexture)))
 		return false;
 
 	D3D10_DEPTH_STENCIL_VIEW_DESC descDSV;
@@ -139,45 +114,35 @@ bool D3D10Renderer::init(void *pWindowHandle,bool fullScreen)
 	descDSV.ViewDimension=D3D10_DSV_DIMENSION_TEXTURE2D;
 	descDSV.Texture2D.MipSlice=0;
 
-	if (FAILED(m_pD3D10Device->CreateDepthStencilView(m_pDepthStencilTexture,&descDSV,&m_pDepthStencelView)))
+	if (FAILED(m_pD3D10Device->CreateDepthStencilView(m_pDepthStencilTexture,
+                   &descDSV,&m_pDepthStencelView)))
 		return false;
 
-
-	//Create the Render Target View, a view is the way we access D3D10 resources
-	//http://msdn.microsoft.com/en-us/library/bb173556%28v=vs.85%29.aspx - BMD
-	if (FAILED(m_pD3D10Device->CreateRenderTargetView( pBackBuffer, //The resource we are creating the view for - BMD
-		NULL, //The description of the view, in this case NULL - BMD
-		&m_pRenderTargetView ))) // the memory address of a pointer to D3D10 Render Target - BMD
-	{
-		
-		pBackBuffer->Release();
+	if (FAILED(m_pD3D10Device->CreateRenderTargetView( pBackBuffer, 
+		NULL, 
+		&m_pRenderTargetView ))){
+             pBackBuffer->Release();
 		return  false;
 	}
-	//The above Get Buffer call will allocate some memory, we now need to release it. - BMD
-    pBackBuffer->Release();
+       pBackBuffer->Release();
 
-	//Binds one or more render targets and depth buffer to the Output merger stage - BMD
-	//http://msdn.microsoft.com/en-us/library/bb173597%28v=vs.85%29.aspx - BMD
-	m_pD3D10Device->OMSetRenderTargets(1, //Number  of views - BMD
-		&m_pRenderTargetView, //pointer to an array of D3D10 Render Target Views - BMD
-		m_pDepthStencelView); //point to Depth Stencil buffer - BMD
-
-    // Setup the viewport 
-	//http://msdn.microsoft.com/en-us/library/bb172500%28v=vs.85%29.aspx - BMD
-    D3D10_VIEWPORT vp;
-    vp.Width = width;
-    vp.Height = height;
+	m_pD3D10Device->OMSetRenderTargets(1, 
+		&m_pRenderTargetView,		
+		m_pDepthStencelView);
+	
+	D3D10_VIEWPORT vp;
+   	vp.Width = windowWidth;
+    vp.Height = windowHeight;
     vp.MinDepth = 0.0f;
     vp.MaxDepth = 1.0f;
     vp.TopLeftX = 0;
     vp.TopLeftY = 0;
-	//Sets the Viewport 
-	//http://msdn.microsoft.com/en-us/library/bb173613%28v=vs.85%29.aspx - BMD
-    m_pD3D10Device->RSSetViewports( 1 //Number of viewports to bind
-		, &vp );//an array of viewports
-
+    
+	m_pD3D10Device->RSSetViewports( 1 
+		, &vp );
 	return true;
 }
+
 
 void D3D10Renderer::clear(float r,float g,float b,float a)
 {
