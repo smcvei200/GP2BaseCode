@@ -2,7 +2,6 @@
 
 //should really check to see if we are on a windows platform
 #include "../Window/Win32Window.h"
-#include "../D3D10Renderer/D3D10Renderer.h"
 
 //boost header for program options
 //#include <boost/program_options.hpp>
@@ -15,8 +14,7 @@ CGameApplication::CGameApplication(void)
 {
 	//Set to NULL
 	m_pWindow=NULL;
-	//Set to NULL
-	m_pRenderer=NULL;
+
 	//Set the Window name to GP2
 	m_GameOptionDesc.gameName=TEXT("GP2");
 	//Window Height and Width
@@ -31,12 +29,7 @@ CGameApplication::CGameApplication(void)
 //Desconstructor
 CGameApplication::~CGameApplication(void)
 {
-	//Delete things in reverse order
-	if (m_pRenderer)
-	{
-		delete m_pRenderer;
-		m_pRenderer=NULL;
-	}
+
 	if (m_pWindow)
 	{
 		delete m_pWindow;
@@ -83,11 +76,6 @@ bool CGameApplication::initPhysics()
 //initGraphics - initialise the graphics subsystem
 bool CGameApplication::initGraphics()
 {
-	//check our settings first, to see what graphics mode we are in
-	m_pRenderer=new D3D10Renderer();
-	if (!m_pRenderer->init(m_pWindow->getHandleToWindow(),m_GameOptionDesc.fullscreen))
-		return false;
-
 	return true;
 }
 
@@ -127,9 +115,7 @@ void CGameApplication::run()
 //Render, called to draw one frame of the game
 void CGameApplication::render()
 {
-	m_pRenderer->clear(1.0f,0.0f,0.0f,1.0f);
 
-	m_pRenderer->present();
 }
 
 //Update, called to update the game

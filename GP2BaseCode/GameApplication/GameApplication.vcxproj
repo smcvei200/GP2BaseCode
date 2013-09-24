@@ -87,9 +87,6 @@
     <ClCompile Include="GameApplication.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\D3D10Renderer\D3D10Renderer.vcxproj">
-      <Project>{07bb296c-cc8a-4ab9-9b0c-76e7f61f6c79}</Project>
-    </ProjectReference>
     <ProjectReference Include="..\Window\Window.vcxproj">
       <Project>{db0e915c-43b1-49a3-a126-3551bf087ffe}</Project>
     </ProjectReference>
