@@ -3,6 +3,13 @@
 #include <D3D10.h>
 #include <D3DX10.h>
 
+struct Vertex
+	{
+		float x;
+		float y;
+		float z;
+	};
+
 D3D10Renderer::D3D10Renderer()
 {
 	m_pD3D10Device=NULL;
@@ -20,6 +27,8 @@ D3D10Renderer::~D3D10Renderer()
 {
 	if (m_pD3D10Device)
 		m_pD3D10Device->ClearState();
+	if(m_pTempBuffer)
+		m_pTempBuffer->Release();
 
 	if (m_pRenderTargetView)
 		m_pRenderTargetView->Release();
@@ -170,17 +179,38 @@ void D3D10Renderer::render()
 {
 }
 
-bool loadEffectFromMemory(const char* pMem)
+bool D3D10Renderer::loadEffectFromMemory(const char* pMem)
 {
 	return false;
 }
 
-bool createBuffer()
+bool D3D10Renderer::createBuffer()
 {
-	return false;
+	Vertex verts[]={
+		{-1.0f, -1.0f,0.0f},
+		{0.0f, 1.0f, 0.0f},
+		{1.0f, -1.0f, 0.0f}
+	};
+
+	D3D10_BUFFER_DESC bd;
+	bd.Usage = D3D10_USAGE_DEFAULT;
+	bd.ByteWidth = sizeof( Vertex ) * 3;
+	bd.BindFlags = D3D10_BIND_VERTEX_BUFFER;
+	bd.CPUAccessFlags = 0;
+	bd.MiscFlags = 0;
+
+	D3D10_SUBRESOURCE_DATA InitData;
+	InitData.pSysMem = &verts;
+
+	if(FAILED(m_pD3D10Device->CreateBuffer( &bd, &InitData, &m_pTempBuffer)))
+	{
+		OutputDebugStringA("Can't create buffer");
+	}
+
+	return true;
 }
 
-bool createVertexLayout()
+bool D3D10Renderer::createVertexLayout()
 {
 	return false;
 }
