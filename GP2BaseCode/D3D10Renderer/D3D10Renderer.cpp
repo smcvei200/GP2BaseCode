@@ -10,6 +10,10 @@ D3D10Renderer::D3D10Renderer()
 	m_pSwapChain=NULL;
 	m_pDepthStencelView=NULL;
 	m_pDepthStencilTexture=NULL;
+	m_pTempEffect = NULL;
+	m_pTempTechnique = NULL;
+	m_pTempBuffer = NULL;
+	m_pTempVertexLayout = NULL;
 }
 
 D3D10Renderer::~D3D10Renderer()
@@ -161,3 +165,23 @@ void D3D10Renderer::present()
 	//http://msdn.microsoft.com/en-us/library/bb174576%28v=vs.85%29.aspx - BMD
     m_pSwapChain->Present( 0, 0 );
 }
+
+void D3D10Renderer::render()
+{
+}
+
+bool loadEffectFromMemory(const char* pMem)
+{
+	return false;
+}
+
+bool createBuffer()
+{
+	return false;
+}
+
+bool createVertexLayout()
+{
+	return false;
+}
+
