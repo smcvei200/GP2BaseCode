@@ -25,6 +25,13 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Effects", "Effects", "{4D72
 		Debug\Effects\Transform.fx = Debug\Effects\Transform.fx
 	EndProjectSection
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Textures", "Textures", "{E9A781E9-4BA1-456B-B0EC-2547F59D0212}"
+	ProjectSection(SolutionItems) = preProject
+		Lab1\Textures\face.png = Lab1\Textures\face.png
+		Lab1\Textures\Spotlight(1).jpg = Lab1\Textures\Spotlight(1).jpg
+		Lab1\Textures\Texture.fx = Lab1\Textures\Texture.fx
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32

@@ -40,6 +40,7 @@ private:
 	bool createVertexLayout();
 	void createCamera(XMVECTOR &position, XMVECTOR &focus, XMVECTOR &up, float fov, float aspectRatio, float nearClip, float farClip);
 	void positionObject(float x, float y, float z);
+	bool loadBaseTexture(char* PFileName);
 
 private:
 	//D3D10 stuff
@@ -58,4 +59,6 @@ private:
 	ID3D10EffectMatrixVariable * m_pWorldEffectVariable;
 	ID3D10EffectMatrixVariable * m_pViewEffectVariable;
 	ID3D10EffectMatrixVariable * m_pProjectionEffectVariable;
+	ID3D10ShaderResourceView * m_pBaseTextureMap;
+	ID3D10EffectShaderResourceVariable * m_pBaseTextureEffectVariable;
 };

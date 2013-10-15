@@ -8,6 +8,8 @@ struct Vertex
                 float x;
                 float y;
                 float z;
+				float tu;
+				float tv;
         };
  
 const D3D10_INPUT_ELEMENT_DESC VertexLayout[] =
@@ -19,6 +21,7 @@ const D3D10_INPUT_ELEMENT_DESC VertexLayout[] =
         0,
         D3D10_INPUT_PER_VERTEX_DATA,
         0},
+		{"TEXCOORD",0,DXGI_FORMAT_R32G32_FLOAT,0,12,D3D10_INPUT_PER_VERTEX_DATA,0},
 };
  
  
@@ -78,6 +81,8 @@ D3D10Renderer::~D3D10Renderer()
                 m_pSwapChain->Release();
         if (m_pD3D10Device)
                 m_pD3D10Device->Release();
+		if (m_pBaseTextureMap)
+				m_pBaseTextureMap->Release();
 }
  
 bool D3D10Renderer::init(void *pWindowHandle,bool fullScreen)
@@ -292,10 +297,10 @@ bool D3D10Renderer::loadEffectFromMemory(const char* pMem)
 bool D3D10Renderer::createBuffer()
 {
         Vertex verts[]={
-                {-1.0f, -1.0f,0.0f},
-                {-1.0f, 1.0f, 0.0f},
-                {1.0f, -1.0f, 0.0f},
-				{1.0f, 1.0f, 1.0f}
+                {-1.0f, -1.0f,0.0f, -1.0f, -1.0f},
+                {-1.0f, 1.0f, 0.0f, -1.0f, 1.0f},
+                {1.0f, -1.0f, 0.0f, 1.0f, -1.0f},
+				{1.0f, 1.0f, 1.0f, 1.0f, 1.0f}
         };
  
         D3D10_BUFFER_DESC bd;
@@ -379,4 +384,21 @@ void D3D10Renderer::createCamera(XMVECTOR &position, XMVECTOR &focus, XMVECTOR &
 void D3D10Renderer::positionObject(float x, float y, float z)
 {
 	m_World = XMMatrixTranslation(x,y,z);
+}
+
+bool D3D10Renderer::loadBaseTexture(char* pFileName)
+{
+	if(FAILED(D3DX10CreateShaderResourceViewFromFileA(
+														m_pD3D10Device,
+														pFileName,
+														NULL,
+														NULL,
+														&m_pBaseTextureMap,
+														NULL)))
+	{
+		return false;
+	}
+
+	m_pBaseTextureEffectVariable = m_pBaseTextureMap->GetResource( 
+	return true;
 }
