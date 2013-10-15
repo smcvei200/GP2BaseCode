@@ -88,7 +88,13 @@ bool D3D10Renderer::init(void *pWindowHandle,bool fullScreen)
  
         UINT width=windowRect.right-windowRect.left;
         UINT height=windowRect.bottom-windowRect.top;
- 
+
+		XMFLOAT3 cameraPos=XMFLOAT3(0.0f,0.0f,-10.0f);
+		XMFLOAT3 focusPos = XMFLOAT3(0.0f, 0.0f, 0.0f);
+		XMFLOAT3 up = XMFLOAT3(0.0f, 1.0f, 0.0f);
+
+		createCamera(XMLoadFloat3(&cameraPos), XMLoadFloat3(&focusPos), XMLoadFloat3(&up), XM_PI/4, (float)width/(float)height, 0.1f, 100.0f);
+		positionObject(1.0f, 2.0f, 3.0f);
         if (!createDevice(window,width,height,fullScreen))
                 return false;
         if (!createInitialRenderTarget(width,height))
@@ -102,6 +108,7 @@ bool D3D10Renderer::init(void *pWindowHandle,bool fullScreen)
         if (!createVertexLayout())
                 return false;
         return true;
+
 }
  
 bool D3D10Renderer::createDevice(HWND window,int windowWidth, int windowHeight,bool fullScreen)
@@ -360,4 +367,16 @@ bool D3D10Renderer::loadEffectFromFile(char* pFileName)
         m_pTempTechnique = m_pTempEffect ->GetTechniqueByName("Render");
  
         return true;
+}
+
+void D3D10Renderer::createCamera(XMVECTOR &position, XMVECTOR &focus, XMVECTOR &up, float fov, float aspectRatio, float nearClip, float farClip)
+{
+	m_View = XMMatrixLookAtLH(position, focus, up);
+
+	m_Projection = XMMatrixPerspectiveFovLH(fov, aspectRatio, nearClip, farClip);
+}
+
+void D3D10Renderer::positionObject(float x, float y, float z)
+{
+	m_World = XMMatrixTranslation(x,y,z);
 }
