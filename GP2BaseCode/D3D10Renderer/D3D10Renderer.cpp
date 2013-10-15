@@ -1,8 +1,7 @@
 
 #include "D3D10Renderer.h"
  
-#include <D3D10.h>
-#include <D3DX10.h>
+
  
 struct Vertex
         {
@@ -53,6 +52,9 @@ D3D10Renderer::D3D10Renderer()
         m_pTempTechnique = NULL;
         m_pTempBuffer = NULL;
         m_pTempVertexLayout = NULL;
+		m_View = XMMatrixIdentity();
+		m_World = XMMatrixIdentity();
+		m_Projection = XMMatrixIdentity();
 }
  
 D3D10Renderer::~D3D10Renderer()
@@ -93,8 +95,10 @@ bool D3D10Renderer::init(void *pWindowHandle,bool fullScreen)
                 return false;
         if (!createBuffer())
                 return false;
-        if (!loadEffectFromMemory(basicEffect))
-                return false;
+        //if (!loadEffectFromMemory(basicEffect))
+                //return false;
+		if(!loadEffectFromFile("Effects/Transform.fx"))
+			return false;
         if (!createVertexLayout())
                 return false;
         return true;
@@ -218,6 +222,11 @@ void D3D10Renderer::present()
  
 void D3D10Renderer::render()
 {
+
+		m_pWorldEffectVariable->SetMatrix((float*)&m_World);
+		m_pViewEffectVariable->SetMatrix((float*)&m_View);
+		m_pProjectionEffectVariable-> SetMatrix((float*)&m_Projection);
+
         m_pD3D10Device ->IASetPrimitiveTopology( D3D10_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP );
         m_pD3D10Device-> IASetInputLayout(m_pTempVertexLayout);
  
@@ -316,5 +325,39 @@ bool D3D10Renderer::createVertexLayout()
                 OutputDebugStringA("Can't create layout");
                 return false;
         }
+        return true;
+
+}
+
+bool D3D10Renderer::loadEffectFromFile(char* pFileName)
+{
+	 DWORD dwShaderFlags = D3D10_SHADER_ENABLE_STRICTNESS;
+#if defined( DEBUG ) || defined( _DEBUG )
+        dwShaderFlags |= D3D10_SHADER_DEBUG;
+#endif
+        ID3D10Blob * pErrorBuffer = NULL;
+       if(FAILED(D3DX10CreateEffectFromFileA(pFileName, 
+											NULL,
+											NULL,
+											"fx_4_0",
+											dwShaderFlags,
+											0,
+											m_pD3D10Device,
+											NULL,
+											NULL,
+											&m_pTempEffect,
+											&pErrorBuffer,
+											NULL)))
+	   {
+		   OutputDebugStringA((char*)pErrorBuffer->GetBufferPointer());
+		   return false;
+	   }
+
+	   m_pWorldEffectVariable = m_pTempEffect->GetVariableByName("matWorld")->AsMatrix();
+	   m_pViewEffectVariable = m_pTempEffect ->GetVariableByName("matView")->AsMatrix();
+	   m_pProjectionEffectVariable = m_pTempEffect ->GetVariableByName("matProjection")->AsMatrix();
+ 
+        m_pTempTechnique = m_pTempEffect ->GetTechniqueByName("Render");
+ 
         return true;
 }

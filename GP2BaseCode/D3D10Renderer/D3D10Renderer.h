@@ -3,17 +3,20 @@
 //The header file for the renderer interface
 #include "../Renderer/Renderer.h"
 #include <Windows.h>
-
+#include <D3D10.h>
+#include <D3DX10.h>
+#define _XM_NO_INTRINSICS_
+#include <xnamath.h>
 //forward declarations of the D3D10 interfaces
-struct ID3D10Device;
-struct IDXGISwapChain;
-struct ID3D10RenderTargetView;
-struct ID3D10DepthStencilView;
-struct ID3D10Texture2D;
-struct ID3D10Effect;
-struct ID3D10Buffer;
-struct ID3D10InputLayout;
-struct ID3D10EffectTechnique;
+//struct ID3D10Device;
+//struct IDXGISwapChain;
+//struct ID3D10RenderTargetView;
+//struct ID3D10DepthStencilView;
+//struct ID3D10Texture2D;
+//struct ID3D10Effect;
+//struct ID3D10Buffer;
+//struct ID3D10InputLayout;
+//struct ID3D10EffectTechnique;
 
 //D3D10Renderer implements the Renderer interface
 class D3D10Renderer:public IRenderer
@@ -29,11 +32,13 @@ public:
 	void render();
 private:
 	bool createDevice(HWND pWindowHandle,int windowWidth, int windowHeight,
-bool fullScreen);
+						bool fullScreen);
 	bool createInitialRenderTarget(int windowWidth, int windowHeight);
 	bool loadEffectFromMemory(const char* pMem);
+	bool loadEffectFromFile( char* pFileName);
 	bool createBuffer();
 	bool createVertexLayout();
+
 private:
 	//D3D10 stuff
 	ID3D10Device * m_pD3D10Device;
@@ -45,4 +50,10 @@ private:
 	ID3D10EffectTechnique * m_pTempTechnique;
 	ID3D10Buffer * m_pTempBuffer;
 	ID3D10InputLayout * m_pTempVertexLayout;
+	XMMATRIX m_View;
+	XMMATRIX m_Projection;
+	XMMATRIX m_World;
+	ID3D10EffectMatrixVariable * m_pWorldEffectVariable;
+	ID3D10EffectMatrixVariable * m_pViewEffectVariable;
+	ID3D10EffectMatrixVariable * m_pProjectionEffectVariable;
 };
