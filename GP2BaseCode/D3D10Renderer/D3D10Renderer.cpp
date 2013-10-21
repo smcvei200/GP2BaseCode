@@ -112,6 +112,8 @@ bool D3D10Renderer::init(void *pWindowHandle,bool fullScreen)
 			return false;
         if (!createVertexLayout())
                 return false;
+		if(!loadBaseTexture("Textures/face.png"))
+			return false;
         return true;
 
 }
@@ -238,6 +240,7 @@ void D3D10Renderer::render()
 		m_pWorldEffectVariable->SetMatrix((float*)&m_World);
 		m_pViewEffectVariable->SetMatrix((float*)&m_View);
 		m_pProjectionEffectVariable-> SetMatrix((float*)&m_Projection);
+		m_pBaseTextureEffectVariable->SetResource(m_pBaseTextureMap);
 
         m_pD3D10Device ->IASetPrimitiveTopology( D3D10_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP );
         m_pD3D10Device-> IASetInputLayout(m_pTempVertexLayout);
@@ -297,10 +300,10 @@ bool D3D10Renderer::loadEffectFromMemory(const char* pMem)
 bool D3D10Renderer::createBuffer()
 {
         Vertex verts[]={
-                {-1.0f, -1.0f,0.0f, -1.0f, -1.0f},
-                {-1.0f, 1.0f, 0.0f, -1.0f, 1.0f},
-                {1.0f, -1.0f, 0.0f, 1.0f, -1.0f},
-				{1.0f, 1.0f, 1.0f, 1.0f, 1.0f}
+                {-1.0f, -1.0f,0.0f, 0.0f, 0.0f},
+                {-1.0f, 1.0f, 0.0f, 0.0f, 1.0f},
+                {1.0f, -1.0f, 0.0f, 1.0f, 0.0f},
+				{1.0f, 1.0f, 0.0f, 1.0f, 1.0f}
         };
  
         D3D10_BUFFER_DESC bd;
@@ -368,7 +371,7 @@ bool D3D10Renderer::loadEffectFromFile(char* pFileName)
 	   m_pWorldEffectVariable = m_pTempEffect->GetVariableByName("matWorld")->AsMatrix();
 	   m_pViewEffectVariable = m_pTempEffect ->GetVariableByName("matView")->AsMatrix();
 	   m_pProjectionEffectVariable = m_pTempEffect ->GetVariableByName("matProjection")->AsMatrix();
- 
+		 
         m_pTempTechnique = m_pTempEffect ->GetTechniqueByName("Render");
  
         return true;
@@ -398,7 +401,6 @@ bool D3D10Renderer::loadBaseTexture(char* pFileName)
 	{
 		return false;
 	}
-
-	m_pBaseTextureEffectVariable = m_pBaseTextureMap->GetResource( 
+	m_pBaseTextureEffectVariable = m_pTempEffect -> GetVariableByName("pBaseTextureMap")->AsShaderResource();
 	return true;
 }

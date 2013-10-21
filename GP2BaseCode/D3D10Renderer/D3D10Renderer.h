@@ -40,7 +40,7 @@ private:
 	bool createVertexLayout();
 	void createCamera(XMVECTOR &position, XMVECTOR &focus, XMVECTOR &up, float fov, float aspectRatio, float nearClip, float farClip);
 	void positionObject(float x, float y, float z);
-	bool loadBaseTexture(char* PFileName);
+	bool loadBaseTexture(char* pFileName);
 
 private:
 	//D3D10 stuff
