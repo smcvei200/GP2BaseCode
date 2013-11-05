@@ -5,9 +5,9 @@
  
 struct Vertex
         {
-                float x;
-                float y;
-                float z;
+                float x,y,z;
+                float tu,tv;
+                
         };
  
 const D3D10_INPUT_ELEMENT_DESC VertexLayout[] =
@@ -19,6 +19,14 @@ const D3D10_INPUT_ELEMENT_DESC VertexLayout[] =
         0,
         D3D10_INPUT_PER_VERTEX_DATA,
         0},
+		{"TEXCOORD",
+        0,
+        DXGI_FORMAT_R32G32_FLOAT,
+        0,
+        12,
+        D3D10_INPUT_PER_VERTEX_DATA,
+        0},
+
 };
  
  
@@ -67,6 +75,8 @@ D3D10Renderer::~D3D10Renderer()
                 m_pTempEffect-> Release();
         if(m_pTempVertexLayout)
                 m_pTempVertexLayout ->Release();
+		if (m_pBaseTextureMap)
+		m_pBaseTextureMap->Release();
  
         if (m_pRenderTargetView)
                 m_pRenderTargetView->Release();
@@ -78,6 +88,8 @@ D3D10Renderer::~D3D10Renderer()
                 m_pSwapChain->Release();
         if (m_pD3D10Device)
                 m_pD3D10Device->Release();
+		if(m_pTempIndexBuffer)
+			m_pTempIndexBuffer->Release();
 }
  
 bool D3D10Renderer::init(void *pWindowHandle,bool fullScreen)
@@ -94,7 +106,7 @@ bool D3D10Renderer::init(void *pWindowHandle,bool fullScreen)
 		XMFLOAT3 up = XMFLOAT3(0.0f, 1.0f, 0.0f);
 
 		createCamera(XMLoadFloat3(&cameraPos), XMLoadFloat3(&focusPos), XMLoadFloat3(&up), XM_PI/4, (float)width/(float)height, 0.1f, 100.0f);
-		positionObject(1.0f, 2.0f, 3.0f);
+		positionObject(0.0f, 0.0f, 0.0f);
         if (!createDevice(window,width,height,fullScreen))
                 return false;
         if (!createInitialRenderTarget(width,height))
@@ -107,6 +119,9 @@ bool D3D10Renderer::init(void *pWindowHandle,bool fullScreen)
 			return false;
         if (!createVertexLayout())
                 return false;
+		if(!loadBaseTexture("Effects/face.png"))
+			return false;
+
         return true;
 
 }
@@ -233,6 +248,7 @@ void D3D10Renderer::render()
 		m_pWorldEffectVariable->SetMatrix((float*)&m_World);
 		m_pViewEffectVariable->SetMatrix((float*)&m_View);
 		m_pProjectionEffectVariable-> SetMatrix((float*)&m_Projection);
+		m_pBaseTextureEffectVariable->SetResource(m_pBaseTextureMap);
 
         m_pD3D10Device ->IASetPrimitiveTopology( D3D10_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP );
         m_pD3D10Device-> IASetInputLayout(m_pTempVertexLayout);
@@ -246,6 +262,8 @@ void D3D10Renderer::render()
                 &m_pTempBuffer,
                 &stride,
                 &offset );
+		m_pD3D10Device -> IASetIndexBuffer(m_pTempIndexBuffer,
+											DXGI_FORMAT_R32_UINT,0);
  
         D3D10_TECHNIQUE_DESC techniqueDesc;
         m_pTempTechnique->GetDesc(&techniqueDesc);
@@ -254,7 +272,7 @@ void D3D10Renderer::render()
         {
                 ID3D10EffectPass *pCurrentPass = m_pTempTechnique ->GetPassByIndex(i);
                 pCurrentPass ->Apply(0);
-                m_pD3D10Device ->Draw(4,0);
+                m_pD3D10Device ->DrawIndexed(36,0,0);
         }
 }
  
@@ -292,15 +310,19 @@ bool D3D10Renderer::loadEffectFromMemory(const char* pMem)
 bool D3D10Renderer::createBuffer()
 {
         Vertex verts[]={
-                {-1.0f, -1.0f,0.0f},
-                {-1.0f, 1.0f, 0.0f},
-                {1.0f, -1.0f, 0.0f},
-				{1.0f, 1.0f, 1.0f}
+                {-1.0f, -1.0f,1.0f},
+                {-1.0f, 1.0f, 1.0f},
+                {1.0f, -1.0f, 1.0f},
+				{1.0f, 1.0f, 1.0f},
+				{-1.0f, -1.0f,-1.0f},
+                {-1.0f, 1.0f, -1.0f},
+                {1.0f, -1.0f, -1.0f},
+				{1.0f, 1.0f, -1.0f}
         };
  
         D3D10_BUFFER_DESC bd;
         bd.Usage = D3D10_USAGE_DEFAULT;
-        bd.ByteWidth = sizeof( Vertex ) * 4;
+        bd.ByteWidth = sizeof( Vertex ) * 8;
         bd.BindFlags = D3D10_BIND_VERTEX_BUFFER;
         bd.CPUAccessFlags = 0;
         bd.MiscFlags = 0;
@@ -309,6 +331,32 @@ bool D3D10Renderer::createBuffer()
         InitData.pSysMem = &verts;
  
         if(FAILED(m_pD3D10Device->CreateBuffer( &bd, &InitData, &m_pTempBuffer)))
+        {
+                OutputDebugStringA("Can't create buffer");
+                return false;
+        }
+
+		int indices[]={
+			0,1,2,1,3,2,
+			4,5,6,5,7,6,
+			6,7,0,7,1,0,
+			2,3,4,3,5,4,
+			1,7,3,7,5,3,
+			6,0,4,0,2,4
+		};
+
+
+		D3D10_BUFFER_DESC indexBD;
+		indexBD.Usage = D3D10_USAGE_DEFAULT;
+		indexBD.ByteWidth = sizeof(int)*36;
+		indexBD.BindFlags = D3D10_BIND_INDEX_BUFFER;
+		indexBD.CPUAccessFlags = 0;
+		indexBD.MiscFlags = 0;
+
+		D3D10_SUBRESOURCE_DATA InitIBData;
+		InitIBData.pSysMem = &indices;
+
+		 if(FAILED(m_pD3D10Device->CreateBuffer( &indexBD, &InitIBData, &m_pTempIndexBuffer)))
         {
                 OutputDebugStringA("Can't create buffer");
                 return false;
@@ -363,20 +411,31 @@ bool D3D10Renderer::loadEffectFromFile(char* pFileName)
 	   m_pWorldEffectVariable = m_pTempEffect->GetVariableByName("matWorld")->AsMatrix();
 	   m_pViewEffectVariable = m_pTempEffect ->GetVariableByName("matView")->AsMatrix();
 	   m_pProjectionEffectVariable = m_pTempEffect ->GetVariableByName("matProjection")->AsMatrix();
- 
+		m_pBaseTextureEffectVariable=m_pTempEffect->GetVariableByName("diffuseTexture")->AsShaderResource();
         m_pTempTechnique = m_pTempEffect ->GetTechniqueByName("Render");
  
         return true;
 }
 
+bool D3D10Renderer::loadBaseTexture(char *pFilename)
+{
+	if(FAILED(D3DX10CreateShaderResourceViewFromFileA(m_pD3D10Device,pFilename,NULL,NULL,&m_pBaseTextureMap,NULL)))
+		return false;
+
+	return true;
+}
+
 void D3D10Renderer::createCamera(XMVECTOR &position, XMVECTOR &focus, XMVECTOR &up, float fov, float aspectRatio, float nearClip, float farClip)
 {
+	m_View = XMMatrixIdentity();
 	m_View = XMMatrixLookAtLH(position, focus, up);
 
+	m_Projection = XMMatrixIdentity();
 	m_Projection = XMMatrixPerspectiveFovLH(fov, aspectRatio, nearClip, farClip);
 }
 
 void D3D10Renderer::positionObject(float x, float y, float z)
 {
+	m_World = XMMatrixIdentity();
 	m_World = XMMatrixTranslation(x,y,z);
 }
