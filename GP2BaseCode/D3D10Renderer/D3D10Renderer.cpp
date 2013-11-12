@@ -7,6 +7,7 @@ struct Vertex
         {
                 float x,y,z;
                 float tu,tv;
+				float normalX, normalY, normalZ;
                 
         };
  
@@ -24,6 +25,13 @@ const D3D10_INPUT_ELEMENT_DESC VertexLayout[] =
         DXGI_FORMAT_R32G32_FLOAT,
         0,
         12,
+        D3D10_INPUT_PER_VERTEX_DATA,
+        0},
+		{"NORMAL",
+        0,
+        DXGI_FORMAT_R32G32B32_FLOAT,
+        0,
+        20,
         D3D10_INPUT_PER_VERTEX_DATA,
         0},
 
@@ -63,6 +71,7 @@ D3D10Renderer::D3D10Renderer()
 		m_View = XMMatrixIdentity();
 		m_World = XMMatrixIdentity();
 		m_Projection = XMMatrixIdentity();
+		m_pBaseTextureMap=NULL;
 }
  
 D3D10Renderer::~D3D10Renderer()
@@ -75,9 +84,9 @@ D3D10Renderer::~D3D10Renderer()
                 m_pTempEffect-> Release();
         if(m_pTempVertexLayout)
                 m_pTempVertexLayout ->Release();
-		if (m_pBaseTextureMap)
-		m_pBaseTextureMap->Release();
- 
+		if (m_pBaseTextureMap){
+			m_pBaseTextureMap->Release();
+		}
         if (m_pRenderTargetView)
                 m_pRenderTargetView->Release();
         if (m_pDepthStencelView)
@@ -105,6 +114,13 @@ bool D3D10Renderer::init(void *pWindowHandle,bool fullScreen)
 		XMFLOAT3 focusPos = XMFLOAT3(0.0f, 0.0f, 0.0f);
 		XMFLOAT3 up = XMFLOAT3(0.0f, 1.0f, 0.0f);
 
+		m_AmbientLightColor = XMFLOAT4(1.0f, 1.0f, 1.0f,1.0f);
+		m_AmbientMaterial = XMFLOAT4(0.4f,0.4f,0.4f,0.4f);
+
+		m_DiffuseLightColour = XMFLOAT4(1.0f,100.0f,255.0f, 1.0f);
+		m_DiffuseMaterial = XMFLOAT4(0.1f, 0.10f, 0.1f, 0.1f);
+		m_LightDirection = XMFLOAT3(0.0f, -0.5f, -0.5f);
+
 		createCamera(XMLoadFloat3(&cameraPos), XMLoadFloat3(&focusPos), XMLoadFloat3(&up), XM_PI/4, (float)width/(float)height, 0.1f, 100.0f);
 		positionObject(0.0f, 0.0f, 0.0f);
         if (!createDevice(window,width,height,fullScreen))
@@ -115,11 +131,11 @@ bool D3D10Renderer::init(void *pWindowHandle,bool fullScreen)
                 return false;
         //if (!loadEffectFromMemory(basicEffect))
                 //return false;
-		if(!loadEffectFromFile("Effects/Transform.fx"))
+		if(!loadEffectFromFile("Effects/Diffuse.fx"))
 			return false;
         if (!createVertexLayout())
                 return false;
-		if(!loadBaseTexture("Effects/face.png"))
+		if(!loadBaseTexture("Textures/face.png"))
 			return false;
 
         return true;
@@ -250,6 +266,15 @@ void D3D10Renderer::render()
 		m_pProjectionEffectVariable-> SetMatrix((float*)&m_Projection);
 		m_pBaseTextureEffectVariable->SetResource(m_pBaseTextureMap);
 
+		m_pAmbientMaterialVariable->SetFloatVector((float*)&m_AmbientMaterial);
+		m_pAmbientLightColorVariable->SetFloatVector((float*)&m_AmbientLightColor);
+
+		m_pDiffuseLightColourVariable->SetFloatVector((float*)&m_DiffuseLightColour);
+		m_pDiffuseMaterialVariable->SetFloatVector((float*)&m_DiffuseMaterial);
+		m_pLightDirectionVariable->SetFloatVector((float*)&m_LightDirection);
+
+
+
         m_pD3D10Device ->IASetPrimitiveTopology( D3D10_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP );
         m_pD3D10Device-> IASetInputLayout(m_pTempVertexLayout);
  
@@ -310,14 +335,14 @@ bool D3D10Renderer::loadEffectFromMemory(const char* pMem)
 bool D3D10Renderer::createBuffer()
 {
         Vertex verts[]={
-                {-1.0f, -1.0f,1.0f},
-                {-1.0f, 1.0f, 1.0f},
-                {1.0f, -1.0f, 1.0f},
-				{1.0f, 1.0f, 1.0f},
-				{-1.0f, -1.0f,-1.0f},
-                {-1.0f, 1.0f, -1.0f},
-                {1.0f, -1.0f, -1.0f},
-				{1.0f, 1.0f, -1.0f}
+                {-1.0f, -1.0f,1.0f,0.0f,0.0f,0.0f,0.5f,0.5f},
+                {-1.0f, 1.0f, 1.0f,0.0f,0.0f,0.0f,0.5f,0.5f},
+                {1.0f, -1.0f, 1.0f, 0.0f,0.0f,0.0f,-0.5f,0.5f},
+				{1.0f, 1.0f, 1.0f, 0.0f,0.0f,0.0f, -0.5f, 0.5f},
+				{-1.0f, -1.0f,-1.0f, 0.0f,0.0f,0.0f, 0.5f, -0.5f},
+                {-1.0f, 1.0f, -1.0f, 0.0f,0.0f,0.0f, 0.5f, -0.5f},
+                {1.0f, -1.0f, -1.0f, 0.0f,0.0f,0.0f, -0.5f, -0.5f},
+				{1.0f, 1.0f, -1.0f, 0.0f,0.0f,0.0f, -0.5f, -0.5f}
         };
  
         D3D10_BUFFER_DESC bd;
@@ -411,9 +436,15 @@ bool D3D10Renderer::loadEffectFromFile(char* pFileName)
 	   m_pWorldEffectVariable = m_pTempEffect->GetVariableByName("matWorld")->AsMatrix();
 	   m_pViewEffectVariable = m_pTempEffect ->GetVariableByName("matView")->AsMatrix();
 	   m_pProjectionEffectVariable = m_pTempEffect ->GetVariableByName("matProjection")->AsMatrix();
-		m_pBaseTextureEffectVariable=m_pTempEffect->GetVariableByName("diffuseTexture")->AsShaderResource();
+		m_pBaseTextureEffectVariable=m_pTempEffect->GetVariableByName("face")->AsShaderResource();
         m_pTempTechnique = m_pTempEffect ->GetTechniqueByName("Render");
- 
+		
+		m_pAmbientMaterialVariable = m_pTempEffect ->GetVariableByName("ambientMaterial") ->AsVector();
+		m_pAmbientLightColorVariable = m_pTempEffect ->GetVariableByName("ambientLightColour") ->AsVector();
+
+		m_pDiffuseLightColourVariable = m_pTempEffect ->GetVariableByName("diffuseLightColour") ->AsVector();
+		m_pDiffuseMaterialVariable = m_pTempEffect -> GetVariableByName("diffuseMaterial") ->AsVector();
+		m_pLightDirectionVariable = m_pTempEffect -> GetVariableByName("lightDirection") -> AsVector();
         return true;
 }
 

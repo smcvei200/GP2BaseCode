@@ -61,5 +61,17 @@ private:
 	ID3D10EffectMatrixVariable * m_pProjectionEffectVariable;
 	ID3D10Buffer* m_pTempIndexBuffer;
 	ID3D10ShaderResourceView * m_pBaseTextureMap;
-	ID3D10EffectShaderResourceVariable *m_pBaseTextureEffectVariable;
+	ID3D10EffectShaderResourceVariable * m_pBaseTextureEffectVariable;
+	
+	ID3D10EffectVectorVariable * m_pAmbientMaterialVariable;
+	ID3D10EffectVectorVariable * m_pAmbientLightColorVariable;
+	XMFLOAT4 m_AmbientMaterial;
+	XMFLOAT4 m_AmbientLightColor;
+
+	ID3D10EffectVectorVariable * m_pLightDirectionVariable;
+	ID3D10EffectVectorVariable * m_pDiffuseMaterialVariable;
+	ID3D10EffectVectorVariable * m_pDiffuseLightColourVariable;
+	XMFLOAT3 m_LightDirection;
+	XMFLOAT4 m_DiffuseMaterial;
+	XMFLOAT4 m_DiffuseLightColour;
 };
