@@ -78,4 +78,13 @@ private:
 	XMFLOAT4 m_DiffuseMaterial;
 	XMFLOAT4 m_DiffuseLightColour;
 
+	ID3D10EffectVectorVariable * m_pSpecularMaterialVariable;
+	ID3D10EffectVectorVariable * m_pSpecularLightColourVariable;
+	ID3D10EffectVectorVariable * m_pCameraPositionVariable;
+	ID3D10EffectVectorVariable * m_pPowerVariable;
+	XMFLOAT4 m_SpecularMaterial;
+	XMFLOAT4 m_SpecularLightColour;
+	XMFLOAT4 m_CameraPosition;
+	XMFLOAT4 m_Power;
+
 };

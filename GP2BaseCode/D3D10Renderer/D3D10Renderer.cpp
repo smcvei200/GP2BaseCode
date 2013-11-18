@@ -111,7 +111,7 @@ bool D3D10Renderer::init(void *pWindowHandle,bool fullScreen)
         UINT width=windowRect.right-windowRect.left;
         UINT height=windowRect.bottom-windowRect.top;
 
-		XMFLOAT3 cameraPos=XMFLOAT3(0.0f,1.0f,-10.0f);
+		XMFLOAT3 cameraPos=XMFLOAT3(10.0f,1.0f,-10.0f);
 		XMFLOAT3 focusPos = XMFLOAT3(0.0f, 0.0f, 0.0f);
 		XMFLOAT3 up = XMFLOAT3(0.0f, 1.0f, 0.0f);
 
@@ -121,6 +121,11 @@ bool D3D10Renderer::init(void *pWindowHandle,bool fullScreen)
 		m_DiffuseLightColour = XMFLOAT4(1.0f,100.0f,255.0f, 1.0f);
 		m_DiffuseMaterial = XMFLOAT4(0.1f, 0.10f, 0.1f, 0.1f);
 		m_LightDirection = XMFLOAT3(0.0f, -0.5f, -0.5f);
+
+		m_SpecularMaterial = XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f);
+		m_SpecularLightColour = XMFLOAT4(10.0f, 1.0f, 1.0f, 1.0f);
+		m_CameraPosition = XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f);
+		m_Power = XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f);
 
 		createCamera(XMLoadFloat3(&cameraPos), XMLoadFloat3(&focusPos), XMLoadFloat3(&up), XM_PI/4, (float)width/(float)height, 0.1f, 100.0f);
 		positionObject(0.0f, 0.0f, 0.0f);
@@ -132,7 +137,7 @@ bool D3D10Renderer::init(void *pWindowHandle,bool fullScreen)
                 return false;
         //if (!loadEffectFromMemory(basicEffect))
                 //return false;
-		if(!loadEffectFromFile("Effects/Diffuse.fx"))
+		if(!loadEffectFromFile("Effects/Specular.fx"))
 			return false;
         if (!createVertexLayout())
                 return false;
@@ -274,6 +279,11 @@ void D3D10Renderer::render()
 		m_pDiffuseMaterialVariable->SetFloatVector((float*)&m_DiffuseMaterial);
 		m_pLightDirectionVariable->SetFloatVector((float*)&m_LightDirection);
 
+		m_pSpecularMaterialVariable->SetFloatVector((float*)&m_SpecularMaterial);
+		m_pSpecularLightColourVariable->SetFloatVector((float*)&m_SpecularLightColour);
+		m_pCameraPositionVariable ->SetFloatVector((float*)&m_CameraPosition);
+		m_pPowerVariable ->SetFloatVector((float*)&m_Power);
+
 
 
         m_pD3D10Device ->IASetPrimitiveTopology( D3D10_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP );
@@ -364,11 +374,11 @@ bool D3D10Renderer::createBuffer()
 
 		int indices[]={
 			0,1,2,1,3,2,
-			4,5,6,5,7,6,
-			6,7,0,7,1,0,
-			2,3,4,3,5,4,
-			1,7,3,7,5,3,
-			6,0,4,0,2,4
+			6,7,4,7,5,4,
+			4,5,0,5,1,0,
+			2,3,6,3,7,6,
+			1,5,3,5,7,3,
+			4,0,6,0,2,6
 		};
 
 
@@ -446,6 +456,11 @@ bool D3D10Renderer::loadEffectFromFile(char* pFileName)
 		m_pDiffuseLightColourVariable = m_pTempEffect ->GetVariableByName("diffuseLightColour") ->AsVector();
 		m_pDiffuseMaterialVariable = m_pTempEffect -> GetVariableByName("diffuseMaterial") ->AsVector();
 		m_pLightDirectionVariable = m_pTempEffect -> GetVariableByName("lightDirection") -> AsVector();
+
+		m_pSpecularLightColourVariable = m_pTempEffect ->GetVariableByName("specularLightColour")->AsVector();
+		m_pSpecularMaterialVariable = m_pTempEffect ->GetVariableByName("specularMaterial")->AsVector();
+		m_pCameraPositionVariable = m_pTempEffect ->GetVariableByName("cameraPosition")->AsVector();
+		m_pPowerVariable = m_pTempEffect ->GetVariableByName("power")->AsVector();
         return true;
 }
 
