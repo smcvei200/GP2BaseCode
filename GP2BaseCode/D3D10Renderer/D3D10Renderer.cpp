@@ -8,10 +8,7 @@ struct Vertex
                 float x,y,z;
                 float tu,tv;
 				float normalX, normalY, normalZ;
-<<<<<<< HEAD
 
-=======
->>>>>>> 48ce24383be7a0146be1ccfeb111e481142eb5a3
                 
         };
  
@@ -30,10 +27,6 @@ const D3D10_INPUT_ELEMENT_DESC VertexLayout[] =
         0,
         12,
         D3D10_INPUT_PER_VERTEX_DATA,
-<<<<<<< HEAD
-
-=======
->>>>>>> 48ce24383be7a0146be1ccfeb111e481142eb5a3
         0},
 		{"NORMAL",
         0,
