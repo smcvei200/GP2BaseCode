@@ -22,10 +22,10 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "D3D10Renderer", "D3D10Rende
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Effects", "Effects", "{4D727B41-D6D4-4568-BFE3-F28E4F04401A}"
 	ProjectSection(SolutionItems) = preProject
-		..\..\..\..\Desktop\Ambient.fx = ..\..\..\..\Desktop\Ambient.fx
-		Lab1\Effects\face.png = Lab1\Effects\face.png
 		Lab1\Effects\Ambient.fx = Lab1\Effects\Ambient.fx
+		Lab1\Effects\BumpMapping.fx = Lab1\Effects\BumpMapping.fx
 		Lab1\Effects\Diffuse.fx = Lab1\Effects\Diffuse.fx
+		Lab1\Effects\ParallaxMapping.fx = Lab1\Effects\ParallaxMapping.fx
 		Lab1\Effects\Specular.fx = Lab1\Effects\Specular.fx
 		Debug\Effects\Transform.fx = Debug\Effects\Transform.fx
 	EndProjectSection

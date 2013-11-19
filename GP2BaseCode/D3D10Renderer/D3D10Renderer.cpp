@@ -8,6 +8,7 @@ struct Vertex
                 float x,y,z;
                 float tu,tv;
 				float normalX, normalY, normalZ;
+				float tanX, tanY, tanZ
 
                 
         };
@@ -35,6 +36,13 @@ const D3D10_INPUT_ELEMENT_DESC VertexLayout[] =
         20,
         D3D10_INPUT_PER_VERTEX_DATA,
         0},
+		{"TANGENT",
+		0,
+		DXGI_FORMAT_R32G32B32_FLOAT,
+		0,
+		32,
+		D3D10_INPUT_PER_VERTEX_DATA,
+		0}
 
 };
  
